@@ -27,3 +27,9 @@ output "alb_security_group_id" {
   description = "ID of the ALB security group"
   value       = aws_security_group.alb.id
 }
+
+output "db_endpoint" {
+  description = "Connection endpoint for the RDS instance"
+  value       = aws_db_instance.rds-db.endpoint
+  sensitive   = true
+}

@@ -275,7 +275,7 @@ resource "aws_instance" "app" {
   subnet_id              = aws_subnet.app[count.index].id
   vpc_security_group_ids = [aws_security_group.app.id]
 
-  user_data = base64encode(<<-EOF
+  user_data_base64 = base64encode(<<-EOF
     #!/bin/bash
     dnf install -y httpd
     systemctl enable httpd
@@ -294,4 +294,42 @@ resource "aws_lb_target_group_attachment" "app" {
   target_group_arn = aws_lb_target_group.app.arn
   target_id        = aws_instance.app[count.index].id
   port             = 80
+}
+
+
+# Database Tier
+# DB subnet group
+resource "aws_db_subnet_group" "db-subnet" {
+  name       = "${var.project_name}-db-subnet-group"
+  subnet_ids = aws_subnet.db[*].id
+
+  tags = {
+    Name = "${var.project_name}-db-subnet-group"
+  }
+}
+
+# RDS insstance
+resource "aws_db_instance" "rds-db" {
+  identifier     = "${var.project_name}-db"
+  engine         = "postgres"
+  engine_version = "16.4"
+  instance_class = "db.t3.micro"
+
+  allocated_storage = 20
+  storage_type      = "gp3"
+
+  db_name  = "appdb"
+  username = "dbadmin"
+  password = var.db_password
+
+  db_subnet_group_name   = aws_db_subnet_group.db-subnet.name
+  vpc_security_group_ids = [aws_security_group.db.id]
+
+  publicly_accessible = false
+  multi_az            = false
+  skip_final_snapshot = true
+
+  tags = {
+    Name = "${var.project_name}-db"
+  }
 }
