@@ -33,3 +33,14 @@ output "db_endpoint" {
   value       = aws_db_instance.rds-db.endpoint
   sensitive   = true
 }
+
+output "alb_dns_name" {
+  description = "Public DNS name of the load balancer"
+  value       = aws_lb.app.dns_name
+}
+
+
+output "github_actions_role_arn" {
+  description = "ARN for GitHub Actions to assume via OIDC"
+  value       = aws_iam_role.github_actions.arn
+}
